@@ -1,4 +1,4 @@
-package ru.yandex.practicum.catsgram.controller;
+package ru.yandex.practicum.catsgram.controllers;
 
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.catsgram.exceptions.InvalidEmailException;
