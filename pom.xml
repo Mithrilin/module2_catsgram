@@ -14,6 +14,8 @@
 	<name>catsgram</name>
 	<description>Мини-версия популярной соцсети с фотографиями котов.</description>
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
 		<java.version>11</java.version>
 	</properties>
 	<dependencies>
