@@ -1,10 +1,7 @@
 package ru.yandex.practicum.catsgram.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.service.PostService;
 
@@ -20,12 +17,17 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public List<Post> findAll() {
+    public List<Post> findAllPosts() {
         return postService.findAll();
     }
 
     @PostMapping(value = "/post")
-    public Post create(@RequestBody Post post) {
+    public Post createPost(@RequestBody Post post) {
         return postService.create(post);
+    }
+
+    @GetMapping("/posts/{postId}")
+    public Post findPostById(@PathVariable int postId) {
+        return postService.findById(postId);
     }
 }
