@@ -22,12 +22,17 @@ public class UserController {
     }
 
     @PostMapping(value = "/users")
-    public User create(@RequestBody User user) {
+    public User createUser(@RequestBody User user) {
         return userService.create(user);
     }
 
     @PutMapping(value = "/users")
-    public User update(@RequestBody User user) {
+    public User updateUser(@RequestBody User user) {
         return userService.update(user);
+    }
+
+    @GetMapping("/users/{userEmail}")
+    public User getUserByEmail(@PathVariable String userEmail) {
+        return userService.findUserByEmail(userEmail);
     }
 }
