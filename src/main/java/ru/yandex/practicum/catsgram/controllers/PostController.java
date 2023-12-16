@@ -2,6 +2,7 @@ package ru.yandex.practicum.catsgram.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.catsgram.exceptions.IncorrectParameterException;
 import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.service.PostService;
 
@@ -23,10 +24,13 @@ public class PostController {
             @RequestParam(value = "page", defaultValue = "0", required = false) Integer page
     ) {
         if(!(sort.equals("asc") || sort.equals("desc"))){
-            throw new IllegalArgumentException();
+            throw new IncorrectParameterException("sort");
         }
-        if(page < 0 || size <= 0){
-            throw new IllegalArgumentException();
+        if (page < 0) {
+            throw new IncorrectParameterException("page");
+        }
+        if (size <= 0) {
+            throw new IncorrectParameterException("size");
         }
         Integer from = page * size;
         return postService.findAll(sort, size, from);

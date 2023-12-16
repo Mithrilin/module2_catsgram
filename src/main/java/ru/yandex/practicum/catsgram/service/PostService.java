@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public class PostService {
     private final List<Post> posts = new ArrayList<>();
     private final UserService userService;
+    private static Integer globalId = 0;
 
     @Autowired
     public PostService(UserService userService) {
@@ -31,11 +32,16 @@ public class PostService {
         }).skip(from).limit(size).collect(Collectors.toList());
     }
 
+    private static Integer getNextId(){
+        return globalId++;
+    }
+
     public Post create(Post post) {
         User user = userService.findUserByEmail(post.getAuthor());
         if (user == null) {
             throw new UserNotFoundException("Пользователь " + post.getAuthor() + " не найден");
         }
+        post.setId(getNextId());
         posts.add(post);
         return post;
     }
@@ -43,6 +49,17 @@ public class PostService {
     public Post findById(int postId) {
         return posts.stream()
                 .filter(x -> x.getId() == postId)
-                .findFirst().orElseThrow(() -> new PostNotFoundException("Пост №" + postId + " не найден."));
+                .findFirst()
+                .orElseThrow(() -> new PostNotFoundException("Пост №" + postId + " не найден."));
+    }
+
+    public List<Post> findAllByUserEmail(String email, Integer size, String sort) {
+        return posts.stream().filter(p -> email.equals(p.getAuthor())).sorted((p0, p1) -> {
+            int comp = p0.getCreationDate().compareTo(p1.getCreationDate()); //прямой порядок сортировки
+            if(sort.equals("desc")){
+                comp = -1 * comp; //обратный порядок сортировки
+            }
+            return comp;
+        }).limit(size).collect(Collectors.toList());
     }
 }
