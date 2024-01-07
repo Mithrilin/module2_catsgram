@@ -12,8 +12,8 @@ import ru.yandex.practicum.catsgram.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class FollowDaoImpl implements FollowDao {
@@ -34,14 +34,31 @@ public class FollowDaoImpl implements FollowDao {
         List<Follow> follows = jdbcTemplate.query(sql, (rs, rowNum) -> makeFollow(rs), userId);
 
         // выгружаем авторов, на которых подписан пользователь
-        Set<User> authors = ...
+        Set<User> authors = follows.stream()
+                .map(Follow::getAuthor)
+                .map(userDao::findUserById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+
+        if(authors.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         // выгрузите и отсортируйте посты полученных выше авторов
         // не забудьте предусмотреть ограничение выдачи
-        ...
+        return authors.stream()
+                .map(postDao::findPostsByUser)
+                .flatMap(Collection::stream)
+                // сортируем от новых к старым
+                .sorted(Comparator.comparing(Post::getCreationDate).reversed())
+                // отбрасываем лишнее
+                .limit(max)
+                .collect(Collectors.toList());
     }
 
     private Follow makeFollow(ResultSet rs) throws SQLException {
         // реализуйте маппинг результата запроса в объект класса Follow
+        return new Follow(rs.getString("author_id"), rs.getString("follower_id"));
     }
 }
