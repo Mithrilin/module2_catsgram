@@ -1,48 +1,23 @@
 package ru.yandex.practicum.catsgram.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.catsgram.exceptions.IncorrectParameterException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.service.PostService;
 
-import java.util.List;
+import java.util.Collection;
 
 @RestController
 public class PostController {
     private final PostService postService;
 
-    @Autowired
     public PostController(PostService postService) {
         this.postService = postService;
     }
 
     @GetMapping("/posts")
-    public List<Post> findAllPosts(
-            @RequestParam(value = "sort", defaultValue = "desc", required = false) String sort,
-            @RequestParam(value = "size", defaultValue = "10", required = false) Integer size,
-            @RequestParam(value = "page", defaultValue = "0", required = false) Integer page
-    ) {
-        if(!(sort.equals("asc") || sort.equals("desc"))){
-            throw new IncorrectParameterException("sort");
-        }
-        if (page < 0) {
-            throw new IncorrectParameterException("page");
-        }
-        if (size <= 0) {
-            throw new IncorrectParameterException("size");
-        }
-        Integer from = page * size;
-        return postService.findAll(sort, size, from);
-    }
-
-    @PostMapping(value = "/post")
-    public Post createPost(@RequestBody Post post) {
-        return postService.create(post);
-    }
-
-    @GetMapping("/posts/{postId}")
-    public Post findPostById(@PathVariable int postId) {
-        return postService.findById(postId);
+    public Collection<Post> findAll(@RequestParam String userId) {
+        return postService.findPostsByUser(userId);
     }
 }

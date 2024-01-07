@@ -1,65 +1,42 @@
 package ru.yandex.practicum.catsgram.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.catsgram.exceptions.PostNotFoundException;
+import ru.yandex.practicum.catsgram.dao.PostDao;
 import ru.yandex.practicum.catsgram.exceptions.UserNotFoundException;
 import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.model.User;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 @Service
 public class PostService {
-    private final List<Post> posts = new ArrayList<>();
+    private final PostDao postDao;
     private final UserService userService;
-    private static Integer globalId = 0;
 
-    @Autowired
-    public PostService(UserService userService) {
+    public PostService(PostDao postDao, UserService userService) {
+        this.postDao = postDao;
         this.userService = userService;
     }
 
-    public List<Post> findAll(String sort, Integer size, Integer from) {
-        return posts.stream().sorted((post1, post2) -> {
-            int compare = post1.getCreationDate().compareTo(post2.getCreationDate());
-            if(sort.equals("desc")){
-                compare = -1 * compare;
-            }
-            return compare;
-        }).skip(from).limit(size).collect(Collectors.toList());
+    public Collection<Post> findPostsByUser(String userId) {
+        User user = userService.findUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с идентификатором " + userId + " не найден."));
+
+        return postDao.findPostsByUser(user);
     }
 
-    private static Integer getNextId(){
-        return globalId++;
-    }
-
-    public Post create(Post post) {
-        User user = userService.findUserByEmail(post.getAuthor());
-        if (user == null) {
-            throw new UserNotFoundException("Пользователь " + post.getAuthor() + " не найден");
-        }
-        post.setId(getNextId());
-        posts.add(post);
-        return post;
-    }
-
-    public Post findById(int postId) {
-        return posts.stream()
-                .filter(x -> x.getId() == postId)
-                .findFirst()
-                .orElseThrow(() -> new PostNotFoundException("Пост №" + postId + " не найден."));
-    }
-
-    public List<Post> findAllByUserEmail(String email, Integer size, String sort) {
-        return posts.stream().filter(p -> email.equals(p.getAuthor())).sorted((p0, p1) -> {
-            int comp = p0.getCreationDate().compareTo(p1.getCreationDate()); //прямой порядок сортировки
-            if(sort.equals("desc")){
-                comp = -1 * comp; //обратный порядок сортировки
-            }
-            return comp;
-        }).limit(size).collect(Collectors.toList());
+    public Collection<Post> findPostsByUser(String authorId, Integer size, String sort) {
+        return findPostsByUser(authorId)
+                .stream()
+                .sorted((p0, p1) -> {
+                    int comp = p0.getCreationDate().compareTo(p1.getCreationDate()); //прямой порядок сортировки
+                    if (sort.equals("desc")) {
+                        comp = -1 * comp; //обратный порядок сортировки
+                    }
+                    return comp;
+                })
+                .limit(size)
+                .collect(Collectors.toList());
     }
 }
